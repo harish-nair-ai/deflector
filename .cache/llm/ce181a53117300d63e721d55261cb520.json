@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Amounts are in minor units. If you send 42 as the amount, the API interprets it as 42 cents, i.e. $0.42. To represent $42.00 you must send 4200. This is the common cause of the 100\u00d7 discrepancy you\u2019re seeing. [S1]\",\"citations\":[\"S1\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1307,
+  "completion_tokens": 284,
+  "latency_ms": 19098.6
+}

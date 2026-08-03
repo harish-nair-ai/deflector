@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The Growth plan allows a sustained rate of 1,200 requests per minute and a burst ceiling of 2,000 requests over a 60\u2011second window. If you exceed these limits you will receive a 429 response with a `Retry-After` header indicating how long to wait before retrying. To avoid 429s, keep your average rate below 1,200 RPM or throttle back during bursts, and honour the `Retry-After` value. Also be aware of per\u2011endpoint sub\u2011limits (e.g. 10 POST\u202f/v1/exports per hour) that can trigger 429s independently of the plan RPM [S2][S1].\",\"citations\":[\"S2\",\"S1\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1135,
+  "completion_tokens": 456,
+  "latency_ms": 18073.2
+}

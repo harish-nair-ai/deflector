@@ -1,0 +1,7 @@
+{
+  "text": "```json\n{\n  \"supported_claims\": 2,\n  \"unsupported_claims\": 0,\n  \"unsupported_detail\": [],\n  \"citations_valid\": true,\n  \"verdict\": \"pass\"\n}\n```",
+  "model": "google/gemma-4-26b-a4b-it:free",
+  "prompt_tokens": 386,
+  "completion_tokens": 57,
+  "latency_ms": 2995.4
+}

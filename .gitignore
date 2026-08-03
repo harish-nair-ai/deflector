@@ -1,0 +1,28 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Runtime artifacts.
+#
+# NOTE: .cache/llm/ and .cache/vision/ are deliberately COMMITTED, not ignored. They are the
+# record/replay fixtures that let anyone run `make eval` and reproduce the published numbers with no
+# API key and no spend. Ignoring them would make the reproducibility claim in the README false.
+# Only the derived index and chunk caches are rebuildable and therefore optional.
+
+# OS
+.DS_Store
+
+# Third-party stress documents — fetched, not redistributed (tools/fetch_stress_corpus.py)
+corpus_stress/*.pdf

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The error indicates that the IdP signing certificate has rotated. [S1][S2] To resolve it, re\u2011import the IdP metadata and enable auto\u2011refresh from the metadata URL. [S1][S2] If auto\u2011refresh is disabled, the rotation will break every login immediately and you will need to manually re\u2011import the metadata. [S3] Meridian caches IdP metadata for 24\u202fhours, so with auto\u2011refresh you should see the new certificate within that window. [S3] According to the error code reference, this is a non\u2011retryable 401 error caused by the IdP certificate rotation. [S4]\",\"citations\":[\"S1\",\"S2\",\"S3\",\"S4\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1301,
+  "completion_tokens": 565,
+  "latency_ms": 22118.3
+}

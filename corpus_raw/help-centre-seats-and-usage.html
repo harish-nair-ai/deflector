@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Managing seats and usage &middot; Meridian Help Centre</title>
+  <meta name="article-id" content="hc-402">
+  <meta name="category" content="billing">
+  <meta name="last-reviewed" content="2026-07-09">
+</head>
+<body>
+  <nav class="breadcrumbs"><a href="/">Help</a> &rsaquo; <a href="/billing">Billing</a> &rsaquo; Seats</nav>
+  <header><h1>Managing seats and usage</h1></header>
+
+  <article>
+    <p>Seat charges are the most common source of billing questions. This article explains how seats
+    are counted, when they are charged, and how to read the usage dashboard.</p>
+
+    <h2>How seats are counted</h2>
+    <p>A seat is any user with an active login. Seats are counted at the moment the invoice is
+    generated, not continuously through the month. Deactivating a user before the invoice date
+    therefore avoids the charge entirely.</p>
+
+    <table class="pricing">
+      <caption>Seat allowances and overage pricing</caption>
+      <thead>
+        <tr><th>Plan</th><th>Seats included</th><th>Extra seat / month</th><th>Maximum seats</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Developer</td><td>1</td><td>Not available</td><td>1</td></tr>
+        <tr><td>Starter</td><td>5</td><td>$19</td><td>25</td></tr>
+        <tr><td>Growth</td><td>25</td><td>$15</td><td>250</td></tr>
+        <tr><td>Enterprise</td><td>Unlimited</td><td>Included</td><td>Unlimited</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Roles and what they can see</h2>
+    <p>Billing visibility is role-gated. A developer who cannot find the invoices page is almost
+    always missing the <code>billing_admin</code> role rather than hitting a bug.</p>
+
+    <table class="roles">
+      <caption>Role permissions for billing surfaces</caption>
+      <thead>
+        <tr><th>Role</th><th>View invoices</th><th>Change payment method</th><th>Add seats</th><th>Cancel plan</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>owner</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>billing_admin</td><td>Yes</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+        <tr><td>developer</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+        <tr><td>viewer</td><td>No</td><td>No</td><td>No</td><td>No</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Reading the usage dashboard</h2>
+    <p>The usage chart shows requests per day against your monthly allowance. The shaded band is
+    projected usage for the remainder of the cycle, based on the trailing seven-day average.</p>
+    <figure>
+      <img src="images/usage-dashboard.png" alt="Usage dashboard showing a request volume chart with a projection band and an overage warning banner">
+      <figcaption>Figure 2 &mdash; the usage dashboard, with the projected-overage warning visible.</figcaption>
+    </figure>
+    <p>The amber banner appears once projected usage exceeds 90% of the allowance. It is a
+    projection, not a charge, and disappears if traffic falls back.</p>
+
+    <h2>Common questions</h2>
+    <dl>
+      <dt>Does removing a seat refund me?</dt>
+      <dd>No. Removing a seat mid-cycle produces a prorated <em>credit</em> applied to the next
+      invoice. It is not returned to the payment method.</dd>
+      <dt>Are deactivated users still charged?</dt>
+      <dd>No, provided they were deactivated before the invoice generation date.</dd>
+      <dt>Can I exceed the maximum seat count?</dt>
+      <dd>Not self-serve. Growth accounts needing more than 250 seats must move to Enterprise.</dd>
+    </dl>
+  </article>
+</body>
+</html>

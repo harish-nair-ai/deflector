@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Yes, the Growth plan caps at 250 seats. [S1][S2]\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1091,
+  "completion_tokens": 630,
+  "latency_ms": 19074.7
+}

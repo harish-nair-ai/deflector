@@ -1,0 +1,7 @@
+{
+  "text": "{\n  \"supported_claims\": 0,\n  \"unsupported_claims\": 2,\n  \"unsupported_detail\": [\"5,000 requests per minute\", \"Burst ceiling is 9,000\"],\n  \"citations_valid\": true,\n  \"verdict\": \"fail\"\n}",
+  "model": "inclusionai/ling-3.0-flash:free",
+  "prompt_tokens": 393,
+  "completion_tokens": 139,
+  "latency_ms": 1429.1
+}

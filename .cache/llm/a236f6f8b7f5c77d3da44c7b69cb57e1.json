@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The URL has expired \u2013 download links are valid for 24\u202fhours from completion [S1][S2]. You can obtain a new pre\u2011signed URL by calling GET /v1/exports/{id}/url; the export itself need not be recreated as long as it is still within the 30\u2011day artifact window [S3].\",\"citations\":[\"S1\",\"S2\",\"S3\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1190,
+  "completion_tokens": 385,
+  "latency_ms": 14757.1
+}

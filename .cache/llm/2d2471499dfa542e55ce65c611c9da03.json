@@ -1,0 +1,7 @@
+{
+  "text": "```json\n{\n  \"supported_claims\": 1,\n  \"unsupported_claims\": 2,\n  \"unsupported_detail\": [\n    \"raised your limit to 3,000\",\n    \"refunded this month\"\n  ],\n  \"citations_valid\": false,\n  \"verdict\": \"fail\"\n}\n```",
+  "model": "google/gemma-4-26b-a4b-it:free",
+  "prompt_tokens": 384,
+  "completion_tokens": 82,
+  "latency_ms": 13278.3
+}

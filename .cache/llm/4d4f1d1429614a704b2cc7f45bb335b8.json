@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The Growth plan allows 1,200 requests per minute sustained and a burst ceiling of 2,000 requests over 60\u202fseconds. If you exceed these limits the API returns a 429 Too Many Requests with a Retry\u2011After header telling you how many seconds to wait. To back off, pause your traffic until the Retry\u2011After period has elapsed or throttle to a rate below 1,200 RPM. Note that some endpoints have stricter per\u2011hour limits \u2013 for example POST\u202f/v1/exports is limited to 10 per hour, POST\u202f/v1/batch to 60 per hour (max 500 records per call), and POST\u202f/v1/auth/tokens to 30 per hour \u2013 and exceeding those also returns a 429 with an endpoint\u2011specific error code.\",\"citations\":[\"S2\",\"S1\",\"S3\"],\"confidence\":0.9,\"missing_information\":\"Whether the 429s are due to burst usage or endpoint sub\u2011limits cannot be confirmed from the ticket alone.\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1316,
+  "completion_tokens": 597,
+  "latency_ms": 23238.7
+}

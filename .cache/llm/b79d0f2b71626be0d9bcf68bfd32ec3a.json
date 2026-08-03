@@ -1,0 +1,7 @@
+{
+  "text": "{\n  \"supported_claims\": 1,\n  \"unsupported_claims\": 2,\n  \"unsupported_detail\": [\"raised your limit to 3,000\", \"refunded this month\"],\n  \"citations_valid\": true,\n  \"verdict\": \"fail\"\n}",
+  "model": "inclusionai/ling-3.0-flash:free",
+  "prompt_tokens": 394,
+  "completion_tokens": 187,
+  "latency_ms": 1974.7
+}

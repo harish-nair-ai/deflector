@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The account is suspended when a chargeback is filed or a compliance hold is placed on the account. This results in a 403 response with the code `account_suspended` and the API keys are blocked until the dispute is resolved or the hold is lifted.[S1][S2]\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1071,
+  "completion_tokens": 220,
+  "latency_ms": 13698.2
+}

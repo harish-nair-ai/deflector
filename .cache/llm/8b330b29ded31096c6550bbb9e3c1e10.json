@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"A 401\u202fauth_invalid error indicates the key is not recognised or has been revoked; you should check for whitespace or truncation and rotate the key if it has been revoked [S3]. A 403\u202fscope_insufficient error means the key is valid but does not have the required scope; you need to create a key with the needed scope [S2].\",\"citations\":[\"S3\",\"S2\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1269,
+  "completion_tokens": 294,
+  "latency_ms": 30334.2
+}

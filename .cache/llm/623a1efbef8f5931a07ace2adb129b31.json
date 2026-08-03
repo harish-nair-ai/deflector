@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"A Sev\u20111 incident is a complete outage or data loss affecting many customers, and the target mitigation time is 60 minutes.\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1100,
+  "completion_tokens": 153,
+  "latency_ms": 12580.4
+}

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The Growth plan\u2019s sustained rate limit is 1,200 requests per minute sustained [S1]. When you exceed this limit the API returns HTTP\u00a0429 Too Many Requests with a Retry\u2011After header indicating how many seconds to wait before retrying [S3]. Rate\u2011limited requests are not billed and do not count toward your monthly allowance [S3].\",\"citations\":[\"S1\",\"S3\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1217,
+  "completion_tokens": 226,
+  "latency_ms": 7172.0
+}

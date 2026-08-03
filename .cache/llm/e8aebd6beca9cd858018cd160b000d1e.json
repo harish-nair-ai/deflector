@@ -1,0 +1,7 @@
+{
+  "text": "{\n  \"supported_claims\": 2,\n  \"unsupported_claims\": 0,\n  \"unsupported_detail\": [],\n  \"citations_valid\": true,\n  \"verdict\": \"pass\"\n}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 407,
+  "completion_tokens": 233,
+  "latency_ms": 8586.2
+}

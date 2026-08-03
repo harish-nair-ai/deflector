@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Meridian will retry failed webhook deliveries for approximately 40 hours. If an event fails more than eight times it will be marked undeliverable and no further attempts will be made. Undeliverable events can still be replayed from the dashboard for 30 days. A delivery is considered failed if the endpoint does not return a 2xx status within 10 seconds.\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1152,
+  "completion_tokens": 426,
+  "latency_ms": 13501.1
+}

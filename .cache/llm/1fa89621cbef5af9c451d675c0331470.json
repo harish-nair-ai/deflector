@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The signature is calculated over the raw request body, not a parsed and re\u2011serialised JSON string. [S1] If you serialise the JSON again, the key order or whitespace changes and the computed HMAC will never match the v1 value. [S1] Another common issue is rejecting deliveries where the timestamp `t` is more than five minutes from your server clock; ensure your clock is synchronised with NTP. [S1] The error code returned for a signature mismatch is `webhook_signature_mismatch`. [S2]\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1239,
+  "completion_tokens": 607,
+  "latency_ms": 31965.6
+}

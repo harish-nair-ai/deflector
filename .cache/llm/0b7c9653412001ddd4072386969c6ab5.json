@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Each additional seat on the Growth plan costs $15 per month.\",\"citations\":[\"S1\",\"S2\",\"S3\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1174,
+  "completion_tokens": 232,
+  "latency_ms": 9758.3
+}

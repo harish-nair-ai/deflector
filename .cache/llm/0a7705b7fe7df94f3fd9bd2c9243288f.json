@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Only the owner role can cancel the subscription. The billing_admin role does not have that permission.\",\"citations\":[\"S1\",\"S2\",\"S3\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1169,
+  "completion_tokens": 194,
+  "latency_ms": 19385.2
+}

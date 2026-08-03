@@ -1,0 +1,7 @@
+{
+  "text": "```json\n{\n  \"supported_claims\": 0,\n  \"unsupported_claims\": 2,\n  \"unsupported_detail\": [\n    \"5,000 requests per minute\",\n    \"Burst ceiling is 9,000\"\n  ],\n  \"citations_valid\": false,\n  \"verdict\": \"fail\"\n}\n```",
+  "model": "google/gemma-4-26b-a4b-it:free",
+  "prompt_tokens": 381,
+  "completion_tokens": 85,
+  "latency_ms": 4717.8
+}
