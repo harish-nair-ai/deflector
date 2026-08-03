@@ -39,6 +39,12 @@ serve:  ## Run the HTTP API on :8000
 eval:  ## Run the golden set (replays from cache — reproducible without a key)
 	$(PY) evals/run_eval.py --sweep
 
+eval-retrieval:  ## Retrieval-only metrics: recall@k, MRR, precision@k, hit@1
+	$(PY) evals/run_retrieval_eval.py --compare
+
+eval-cache:  ## Measure whether a semantic answer cache is safe here (it is not)
+	$(PY) evals/measure_semantic_cache.py
+
 eval-fresh:  ## Run the golden set against the live API
 	$(PY) evals/run_eval.py --fresh --sweep
 
@@ -48,4 +54,4 @@ test:  ## Run the offline unit tests
 clean:  ## Remove caches and build artifacts
 	rm -rf .cache/chunks.json .cache/index.json .pytest_cache **/__pycache__
 
-.PHONY: help install sources ingest fetch-stress ingest-stress index demo ask serve eval eval-fresh test clean
+.PHONY: help install sources ingest fetch-stress ingest-stress index demo ask serve eval eval-fresh eval-retrieval eval-cache test clean

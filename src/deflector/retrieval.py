@@ -35,6 +35,7 @@ from dataclasses import dataclass
 from .config import CONFIG, INDEX_PATH
 from .corpus import Chunk, load_chunks
 from .providers import Provider
+from .rerank import Reranker
 
 _TOKEN = re.compile(r"[a-z0-9_]+")
 
@@ -127,9 +128,10 @@ class Hit:
     bm25_score: float
     bm25_rank: int | None
     dense_rank: int | None
+    rerank_score: float | None = None   # cross-encoder logit, when reranking ran
 
     def to_dict(self) -> dict:
-        return {
+        payload = {
             "chunk_id": self.chunk.chunk_id,
             "doc_title": self.chunk.doc_title,
             "section": self.chunk.section,
@@ -139,6 +141,9 @@ class Hit:
             "bm25_rank": self.bm25_rank,
             "dense_rank": self.dense_rank,
         }
+        if self.rerank_score is not None:
+            payload["rerank"] = round(self.rerank_score, 3)
+        return payload
 
 
 class Retriever:
@@ -151,6 +156,15 @@ class Retriever:
         )
         self.vectors: list[list[float]] | None = None
         self.dense_available = False
+        self.reranker = Reranker()
+
+    @property
+    def reranker_available(self) -> bool:
+        return self.cfg.rerank_enabled and self.reranker.available
+
+    @property
+    def default_mode(self) -> str:
+        return "hybrid+rerank" if self.reranker_available else "hybrid"
 
     # -- index -------------------------------------------------------------------------
 
@@ -197,20 +211,32 @@ class Retriever:
 
     # -- search ------------------------------------------------------------------------
 
-    def search(self, query: str, top_k: int | None = None) -> list[Hit]:
+    def search(self, query: str, top_k: int | None = None, mode: str | None = None) -> list[Hit]:
+        """Retrieve, fuse and (when enabled) rerank.
+
+        `mode` exists so the retrieval eval can score each strategy in isolation against the same
+        labels: "bm25", "dense", "hybrid", or "hybrid+rerank". Production uses the configured
+        default, which reranks whenever the optional extra is installed.
+        """
         top_k = top_k or self.cfg.top_k
+        mode = mode or self.default_mode
         n_candidates = self.cfg.candidates_per_arm
         k = self.cfg.rrf_k
+        use_bm25 = mode != "dense"
+        use_dense = mode != "bm25"
 
-        bm25_scores = self.bm25.score(tokenize(query))
-        bm25_order = sorted(
-            range(len(self.chunks)), key=lambda i: bm25_scores[i], reverse=True
-        )[:n_candidates]
-        bm25_order = [i for i in bm25_order if bm25_scores[i] > 0]
+        bm25_scores = [0.0] * len(self.chunks)
+        bm25_order: list[int] = []
+        if use_bm25:
+            bm25_scores = self.bm25.score(tokenize(query))
+            bm25_order = sorted(
+                range(len(self.chunks)), key=lambda i: bm25_scores[i], reverse=True
+            )[:n_candidates]
+            bm25_order = [i for i in bm25_order if bm25_scores[i] > 0]
 
         dense_scores = [0.0] * len(self.chunks)
         dense_order: list[int] = []
-        if self.dense_available and self.vectors:
+        if use_dense and self.dense_available and self.vectors:
             query_vec = self.provider.embed([query])
             if query_vec:
                 qv = query_vec[0]
@@ -228,18 +254,30 @@ class Retriever:
         for idx, rank in dense_rank.items():
             fused[idx] = fused.get(idx, 0.0) + 1.0 / (k + rank + 1)
 
-        ranked = sorted(fused.items(), key=lambda kv: kv[1], reverse=True)[:top_k]
-        return [
-            Hit(
+        ordered = sorted(fused.items(), key=lambda kv: kv[1], reverse=True)
+
+        def build(idx: int, score: float, rerank_score: float | None = None) -> Hit:
+            return Hit(
                 chunk=self.chunks[idx],
                 rrf_score=score,
                 dense_score=dense_scores[idx],
                 bm25_score=bm25_scores[idx],
                 bm25_rank=bm25_rank.get(idx),
                 dense_rank=dense_rank.get(idx),
+                rerank_score=rerank_score,
             )
-            for idx, score in ranked
-        ]
+
+        # Two-stage: fusion narrows the corpus to a candidate pool cheaply, the cross-encoder
+        # reorders that pool expensively. Reranking is applied to the full candidate pool, not to
+        # the already-truncated top_k — reordering four items it was never allowed to reach past
+        # would be pointless.
+        if mode.endswith("rerank") and self.reranker_available and ordered:
+            pool = ordered[: self.cfg.rerank_candidates]
+            texts = [self.chunks[idx].contextualized for idx, _ in pool]
+            reranked = self.reranker.rank(query, texts, top_k=top_k)
+            return [build(pool[r.index][0], pool[r.index][1], r.score) for r in reranked]
+
+        return [build(idx, score) for idx, score in ordered[:top_k]]
 
     # -- calibrated strength -----------------------------------------------------------
 

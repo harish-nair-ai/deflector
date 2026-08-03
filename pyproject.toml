@@ -13,6 +13,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+# Optional. Adds torch (~hundreds of MB) for cross-encoder reranking, which currently
+# ships DISABLED — see RetrievalConfig.rerank_enabled for the measurement that decided that.
+rerank = ["sentence-transformers>=3.0"]
+ingest = ["pdfplumber>=0.11", "beautifulsoup4>=4.12", "pillow>=10.0"]
 
 [project.scripts]
 deflector = "deflector.cli:main"

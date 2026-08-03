@@ -48,7 +48,9 @@ Defaults are **free-tier models**, so it runs at zero cost out of the box.
 ```bash
 make ask Q="We're on Growth and getting 429s at 900 rpm. What's our real limit?"
 make eval                         # golden set — replays from cache, no key needed
-make test                         # 57 offline unit tests, <1s
+make eval-retrieval               # retrieval-only: recall@k, MRR, precision@k, hit@1
+make eval-cache                   # is a semantic answer cache safe here? (no — see below)
+make test                         # 69 offline unit tests, <1s
 make serve                        # HTTP API on :8000
 ```
 
@@ -113,11 +115,13 @@ ticket
 |---|---|
 | `ingest.py` | Layout-aware parsing: markdown, HTML, PDF, scanned PDF, tables, figures |
 | `corpus.py` | Blocks → chunks. Chunking policy lives here, parsing does not |
-| `retrieval.py` | BM25 (written out, not imported), dense vectors, RRF fusion |
+| `retrieval.py` | BM25 (written out, not imported), dense vectors, RRF fusion, optional reranking |
 | `guardrails.py` | Two-tier sensitive-data detection, Luhn validation, injection screening |
 | `prompts.py` | Versioned prompts, cache-friendly layout |
 | `confidence.py` | The four signals, the hard gates, the routing decision |
 | `pipeline.py` | Orchestration. Never raises on a ticket |
+| `rerank.py` | Optional cross-encoder reranking — **disabled, measured** |
+| `semantic_cache.py` | Optional answer cache — **disabled, measured unsafe** |
 | `api.py` / `cli.py` | HTTP and terminal surfaces |
 
 ---
@@ -482,6 +486,76 @@ three things:
   code, and the diff is caused by you.
 - **Rate limits stop being fatal.** A partially-completed run resumes for free.
 
+> **Current cache state — honest note.** A fix to how the ticket subject is passed into the prompt
+> (it was being duplicated into the body) changed the request, and therefore the cache key, for every
+> answerer call. The committed fixtures predate that fix, so they no longer match the current code
+> path and the answerer replays as a miss. The fix is correct and stays; the fixtures are regenerated
+> by the next full `make eval`, which is already pending the quota reset. Until then, offline replay
+> reproduces the *screening and routing* behaviour but not the generated answers.
+
+---
+
+## Two standard techniques I built, measured, and turned off
+
+Both a cross-encoder reranker and a semantic answer cache are implemented, tested and shipped
+**disabled**. They are in the repo because the measurement is the interesting part: adding a SOTA
+component because it is standard, without checking whether it helps *here*, is how systems get slow
+and wrong at the same time.
+
+### Reranking — `make eval-retrieval`
+
+Standard practice is retrieve → **rerank** → generate. So I added a `ms-marco-MiniLM-L-6-v2`
+cross-encoder over the fused candidate pool and measured it against the golden set's retrieval labels:
+
+| strategy | recall@4 | MRR | precision@4 | hit@1 | p50 |
+|---|---:|---:|---:|---:|---:|
+| BM25 only | 100.0% | 1.000 | 81.6% | 100.0% | 0.2 ms |
+| Dense only | 100.0% | 0.965 | 84.2% | 94.7% | 31.0 ms |
+| **Hybrid (shipped)** | **100.0%** | **1.000** | **84.2%** | **100.0%** | **30.9 ms** |
+| Hybrid + rerank | 100.0% | 0.965 | 85.5% | 94.7% | 143.2 ms |
+
+Reranking buys +1.3pp precision@4 and costs MRR, hit@1 and **4.6× latency**. Two reasons:
+
+1. **Retrieval here is already saturated.** Recall@4 is 100% and MRR is 1.000. There is no headroom
+   for a reranker to win, so every reordering it makes is only a chance to lose.
+2. **Domain mismatch.** ms-marco cross-encoders are trained on web-search prose. Two thirds of this
+   corpus is table rows shaped like `Plan: Growth | Sustained RPM: 1,200`, which is nothing like
+   their training distribution.
+
+It stays in the codebase because it is the right answer at a larger corpus, where recall stops being
+free. Enable with `DEFLECTOR_RERANK=1` — and re-measure before trusting it.
+
+### Semantic answer caching — `make eval-cache`
+
+Support traffic is repetitive, so caching answers by question *similarity* rather than exact string
+looks like the biggest cost lever available. It is unsafe here, and the reason is worth stating
+precisely.
+
+Cosine similarity against a seeded *"what is the Growth rate limit?"* answer:
+
+| Probe | Cosine |
+|---|---:|
+| paraphrase — "hitting the API limit on Growth, what's the rpm cap" | 0.653 |
+| paraphrase — "what's the rpm ceiling for a Growth account" | 0.701 |
+| paraphrase — "Growth plan: how many requests a minute before 429s" | 0.784 |
+| **wrong plan** — "we're on **Starter** … what is our sustained rate limit" | **0.816** |
+| **wrong plan** — "we're on **Enterprise** … what is our sustained rate limit" | **0.808** |
+
+**The wrong-plan questions score higher than every genuine paraphrase.** They differ from the seed by
+one word; the paraphrases differ by many. So **no threshold exists** that produces cache hits on real
+rephrasings without also serving a Starter customer the Growth limits — a confidently wrong answer
+about their own account, which is precisely the failure this system is built to prevent.
+
+Keying on the retrieved chunk set instead does not rescue it: a genuine paraphrase and the wrong-plan
+question both overlap the seed's chunks at Jaccard **0.333**, so that signal does not discriminate
+either. Requiring an *identical* chunk set degenerates to an exact-string cache.
+
+The failure is specific to **parametric questions** — same shape, different entity — which describes
+most support traffic. Fixing it needs entity-aware keying (extract the plan, tier or region and
+require an exact match), not a higher threshold. Until that exists it stays off, and
+`tests/test_rerank_and_cache.py` encodes the property so nobody re-enables it without meeting the
+reason it was disabled.
+
 ---
 
 ## Cost per 1,000 queries
@@ -566,8 +640,8 @@ corpus/          9 markdown knowledge-base documents
 corpus_raw/      generated PDF (tables + figure, page-spanning table) and HTML help-centre export
 corpus_stress/   real downloaded PDFs: arXiv paper, IRS form, and a genuinely scanned PDF
 src/deflector/   the service
-evals/           golden.yaml (39 cases) + run_eval.py
-tests/           57 offline unit tests, run in under a second
+evals/           golden.yaml (39 cases) + end-to-end, retrieval-only and cache-safety harnesses
+tests/           69 offline unit tests, run in under a second
 tools/           fixture builders, cost model, README results injector
 ```
 

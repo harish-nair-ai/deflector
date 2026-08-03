@@ -68,6 +68,23 @@ class RetrievalConfig:
     bm25_k1: float = 1.5
     bm25_b: float = 0.75
 
+    # Two-stage retrieval: fusion narrows the corpus cheaply, a cross-encoder reorders that pool.
+    #
+    # OFF BY DEFAULT, AND THAT IS A MEASURED DECISION, NOT AN OVERSIGHT.
+    # `make eval-retrieval` compares all four strategies on the golden set. On this corpus reranking
+    # is a net loss: MRR 1.000 -> 0.965, hit@1 100% -> 94.7%, p50 31ms -> 143ms, in exchange for
+    # +1.3pp precision@4. Two reasons. First, hybrid retrieval is already saturated here — recall@4
+    # is 100% and MRR is 1.000, so there is no headroom for a reranker to win and every reordering it
+    # makes is a chance to lose. Second, ms-marco cross-encoders are trained on web-search prose,
+    # and half this corpus is table rows shaped like "Plan: Growth | Sustained RPM: 1,200", which is
+    # nothing like their training distribution.
+    #
+    # It stays in the codebase because it is the right answer at a larger corpus, where recall stops
+    # being free and fusion starts burying relevant chunks below the cut. Enable with
+    # DEFLECTOR_RERANK=1 and re-measure before trusting it.
+    rerank_enabled: bool = os.getenv("DEFLECTOR_RERANK", "") != ""
+    rerank_candidates: int = 12
+
 
 # --------------------------------------------------------------------------------------
 # Confidence and routing
@@ -157,9 +174,47 @@ class PolicyConfig:
 
 
 @dataclass(frozen=True)
+class SemanticCacheConfig:
+    """Answer reuse across differently-worded tickets.
+
+    The threshold is the whole design. Semantic caching fails in exactly one direction: two questions
+    that are nearly identical but differ in the one word that decides the answer — "the Growth rate
+    limit" versus "the Starter rate limit" — sit very close together in embedding space. 0.95 is
+    deliberately conservative, because a miss costs a fraction of a cent and a wrong hit is the
+    failure this entire system exists to prevent.
+    """
+
+    # OFF BY DEFAULT. MEASURED, NOT ASSUMED — see `evals/measure_semantic_cache.py`.
+    #
+    # Cosine similarity to a seeded "what is the Growth rate limit?" answer:
+    #     genuine paraphrase  "hitting the API limit on Growth, what's the rpm cap"   0.653
+    #     genuine paraphrase  "Growth plan: how many requests a minute before 429s"   0.784
+    #     WRONG PLAN          "we're on Starter ... what is our sustained rate limit"  0.816   <-- highest
+    #
+    # The near-miss outscores both real paraphrases, because it differs from the seed by one word
+    # while the paraphrases differ by many. There is therefore NO threshold that admits the
+    # paraphrases and rejects the wrong-plan question, and a hit there would serve a Starter customer
+    # the Growth limits — a confidently wrong answer about their account, which is the exact failure
+    # this whole system exists to prevent.
+    #
+    # Keying on the retrieved chunk set instead does not rescue it: paraphrase-2 and the wrong-plan
+    # question both overlap the seed's chunk set at Jaccard 0.333, so that signal does not
+    # discriminate either. Requiring an identical chunk set degenerates to an exact-string cache.
+    #
+    # The failure is specific to *parametric* questions — same shape, different entity — which is
+    # most of support. Making this safe needs entity-aware keying (extract the plan/tier/region and
+    # require an exact match), not a higher threshold. Until that exists, it stays off.
+    enabled: bool = os.getenv("DEFLECTOR_SEMANTIC_CACHE", "") != ""
+    similarity_threshold: float = 0.95
+    ttl_seconds: float = 60 * 60 * 24 * 7      # a week; knowledge-base edits should win eventually
+    max_entries: int = 5000
+
+
+@dataclass(frozen=True)
 class Config:
     models: ModelConfig = field(default_factory=ModelConfig)
     retrieval: RetrievalConfig = field(default_factory=RetrievalConfig)
+    cache: SemanticCacheConfig = field(default_factory=SemanticCacheConfig)
     confidence: ConfidenceConfig = field(default_factory=ConfidenceConfig)
     policy: PolicyConfig = field(default_factory=PolicyConfig)
 

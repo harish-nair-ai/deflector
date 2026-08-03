@@ -39,6 +39,7 @@ from .corpus import Chunk, load_chunks
 from .guardrails import match_policy_intents, screen
 from .providers import Provider, Usage
 from .retrieval import Hit, Retriever
+from .semantic_cache import SemanticCache
 
 
 @dataclass
@@ -110,10 +111,20 @@ def parse_json_object(text: str) -> dict | None:
 
 
 class Deflector:
-    def __init__(self, provider: Provider | None = None, chunks: list[Chunk] | None = None) -> None:
+    def __init__(
+        self,
+        provider: Provider | None = None,
+        chunks: list[Chunk] | None = None,
+        use_semantic_cache: bool = True,
+    ) -> None:
         self.provider = provider or Provider()
         self.retriever = Retriever(self.provider, chunks=chunks)
         self.retriever.build_index()
+        self.cache = (
+            SemanticCache(self.provider)
+            if use_semantic_cache and CONFIG.cache.enabled
+            else None
+        )
 
     # -----------------------------------------------------------------------------------
 
@@ -135,6 +146,14 @@ class Deflector:
         policy_intents = match_policy_intents(combined)
         safe_query = f"{screened_subject if subject else ''} {screened_body.text}".strip()
 
+        # -- 1b. semantic cache -----------------------------------------------------------
+        # Placed after screening and before retrieval: screening decides whether this ticket is even
+        # allowed to touch the cache, and a hit skips both retrieval and every model call.
+        screening_view = screened.to_dict() | {"policy_intents": policy_intents}
+        cached = self.cache.lookup(safe_query, screening_view) if self.cache else None
+        if cached is not None:
+            return self._from_cache(ticket_id, body, cached, screening_view, started)
+
         # -- 2. retrieve ----------------------------------------------------------------
         hits: list[Hit] = self.retriever.search(safe_query)
         strength, margin = self.retriever.strength(hits)
@@ -154,8 +173,8 @@ class Deflector:
                 system=prompts.ANSWER_SYSTEM,
                 user=prompts.ANSWER_USER.format(
                     sources=sources_block,
-                    subject=screened.text.split("\n")[0] if subject else "(none)",
-                    body=screened.text,
+                    subject=screened_subject,
+                    body=screened_body.text,
                 ),
                 model=CONFIG.models.answerer,
                 fallbacks=CONFIG.models.answerer_fallbacks,
@@ -252,7 +271,7 @@ class Deflector:
             if f"S{i}" in set(cited_ids) or f"[S{i}]" in answer_text
         ]
 
-        return DeflectionResult(
+        result = DeflectionResult(
             ticket_id=ticket_id,
             question=body,
             answer=answer_text,
@@ -262,7 +281,7 @@ class Deflector:
             citations=citations,
             sources=[hit.to_dict() for hit in hits],
             decision=decision,
-            screening=screened.to_dict() | {"policy_intents": policy_intents},
+            screening=screening_view,
             usage=usage,
             meta={
                 "prompt_version": prompts.PROMPT_VERSION,
@@ -274,6 +293,50 @@ class Deflector:
                 "retrieval_margin": round(margin, 4),
                 "citation_coverage": round(citation.coverage, 3),
                 "claim_sentences": citation.claim_sentences,
+                "cache": "miss",
+                "elapsed_ms": round((time.perf_counter() - started) * 1000, 1),
+            },
+        )
+
+        if self.cache is not None:
+            self.cache.store(safe_query, result, screening_view)
+
+        return result
+
+    def _from_cache(
+        self, ticket_id: str, body: str, entry, screening: dict, started: float
+    ) -> DeflectionResult:
+        """Serve a previously auto-resolved answer for a differently-worded question.
+
+        The recorded confidence is carried through unchanged rather than recomputed. Only answers
+        that already cleared the auto-resolve bar are ever stored, so the band is inherited, not
+        re-derived — and the response says plainly that it came from cache, so a cached answer is
+        never mistaken for a fresh judgement in the audit trail.
+        """
+        return DeflectionResult(
+            ticket_id=ticket_id,
+            question=body,
+            answer=entry.answer,
+            band=Band.HIGH,
+            route=Route.AUTO_RESOLVE,
+            score=entry.score,
+            citations=entry.citations,
+            sources=[],
+            decision=Decision(
+                band=Band.HIGH,
+                route=Route.AUTO_RESOLVE,
+                score=entry.score,
+                signals={},
+                gates=[],
+                reasons=[f"semantic cache hit — originally answered for: {entry.question[:90]!r}"],
+            ),
+            screening=screening,
+            usage=Usage(),
+            meta={
+                "prompt_version": prompts.PROMPT_VERSION,
+                "cache": "hit",
+                "cached_question": entry.question,
+                "cache_hits_on_entry": entry.hits,
                 "elapsed_ms": round((time.perf_counter() - started) * 1000, 1),
             },
         )
