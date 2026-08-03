@@ -15,7 +15,10 @@ sources:  ## Rebuild the generated PDF/HTML fixtures
 ingest:  ## Parse the corpus and report what the parser found
 	$(PY) -m deflector ingest
 
-ingest-stress:  ## Parse the real-world stress corpus (arXiv, IRS form, a scanned PDF)
+fetch-stress:  ## Download the real-world stress documents and derive the scanned one
+	$(PY) tools/fetch_stress_corpus.py
+
+ingest-stress: fetch-stress  ## Parse the real-world stress corpus (arXiv, IRS form, a scanned PDF)
 	$(PY) -m deflector ingest --dir corpus_stress
 
 index:  ## Build the embedding index
@@ -45,4 +48,4 @@ test:  ## Run the offline unit tests
 clean:  ## Remove caches and build artifacts
 	rm -rf .cache/chunks.json .cache/index.json .pytest_cache **/__pycache__
 
-.PHONY: help install sources ingest ingest-stress index demo ask serve eval eval-fresh test clean
+.PHONY: help install sources ingest fetch-stress ingest-stress index demo ask serve eval eval-fresh test clean

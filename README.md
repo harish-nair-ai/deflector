@@ -223,10 +223,12 @@ There is no tesseract dependency. A VLM is asked to transcribe the page and **re
 markdown table**, which classical OCR cannot do — OCR returns a scanned table as spatially unaligned
 text, losing exactly the row-column structure that made it worth reading.
 
-The stress corpus proves this on real documents, not fixtures:
+The stress corpus proves this on real documents, not fixtures. They are **downloaded rather than
+committed** — redistributing someone else's PDF is not mine to do, and a parser that has only ever
+been shown committed fixtures has not been shown to generalise:
 
 ```
-$ make ingest-stress
+$ make ingest-stress            # fetches the sources, then parses them
 
 document                               source        pg  prose  tbl  rows  fig  chunks
 ──────────────────────────────────────────────────────────────────────────────────────
