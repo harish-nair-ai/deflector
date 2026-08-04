@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The amber banner appears when projected usage exceeds 90\u202f% of the monthly allowance. It is a warning that the projected usage is high, not a billing event, and it disappears if traffic falls back below the threshold. In the example shown, the projection is 94\u202f% of a 10\u202f000\u202f000\u2011request allowance, which triggers the banner. The banner is simply a visual cue that the projected usage band is approaching the limit; it does not indicate that a charge has already been applied.\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1220,
+  "completion_tokens": 475,
+  "latency_ms": 19995.9
+}

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Meridian enforces rate limits per API key, measured in requests per minute (RPM) using a sliding window. [S2] Limits are applied independently to each key, not to the account as a whole. [S2] The Developer (free) plan allows 60 sustained RPM, a burst ceiling of 100 requests for 10 seconds, and 5 concurrent connections. [S4] Burst capacity refills continuously; an idle key accumulates burst allowance up to the ceiling, then stops accumulating. [S1] Sustained traffic above the plan RPM will exhaust burst within the",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1040,
+  "completion_tokens": 900,
+  "latency_ms": 41770.1
+}

@@ -156,12 +156,20 @@ def _source_fingerprint(directories: list[Path]) -> str:
     deploy-time cost into a request-path cost. The cache is keyed on the sources *and* the chunking
     parameters, so editing a document or changing the target chunk size invalidates it, but
     restarting the service does not.
+
+    The vision cache is hashed in too, and that is not cosmetic. Figure captions and scanned-page
+    transcriptions are *model output* that becomes chunk text, so they are an input to chunking just
+    as much as the PDFs are. They also arrive late: a captioning call can fail on one run (rate
+    limit, timeout) and succeed on the next, leaving the sources byte-identical while the text they
+    produce changes. Keying on sources alone means that second run silently keeps serving chunks
+    built from the failed attempt. Caught exactly that way — a figure caption landed on a retry and
+    the index stayed one chunk short.
     """
     import hashlib
 
     cfg = CONFIG.retrieval
     h = hashlib.sha256()
-    h.update(f"{cfg.chunk_target_words}:{cfg.chunk_overlap_words}:v2".encode())
+    h.update(f"{cfg.chunk_target_words}:{cfg.chunk_overlap_words}:v3".encode())
     for directory in directories:
         if not directory.exists():
             continue
@@ -169,6 +177,14 @@ def _source_fingerprint(directories: list[Path]) -> str:
             if path.is_file() and not path.name.startswith("."):
                 stat = path.stat()
                 h.update(f"{path.name}:{stat.st_size}:{int(stat.st_mtime)}".encode())
+
+    vision_dir = CACHE_DIR / "vision"
+    if vision_dir.exists():
+        # Content, not mtime: these files are committed fixtures, so a fresh clone gets whatever
+        # mtime the checkout assigns. Hashing bytes keeps the fingerprint stable across machines.
+        for path in sorted(vision_dir.glob("*.json")):
+            h.update(path.name.encode())
+            h.update(path.read_bytes())
     return h.hexdigest()[:16]
 
 

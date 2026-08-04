@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Yes, support can send a copy of an invoice to the requested email address [S1][S2]. The owner role has permission to view invoices [S3].\",\"citations\":[\"S1\",\"S2\",\"S3\"],\"confidence\":0.9,\"missing_information\":\"Roles other than owner that can view invoices are not listed in the provided sources.\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1158,
+  "completion_tokens": 352,
+  "latency_ms": 24585.0
+}

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":false,\"answer\":\"\",\"citations\":[],\"confidence\":0.0,\"missing_information\":\"Whether a GraphQL API is planned or shipping date\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1214,
+  "completion_tokens": 131,
+  "latency_ms": 7218.2
+}

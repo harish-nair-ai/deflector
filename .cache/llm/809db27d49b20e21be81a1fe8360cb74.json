@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The error indicates the IdP signing certificate has rotated. Re\u2011import the IdP metadata or enable auto\u2011refresh from the metadata URL to resolve the issue. If auto\u2011refresh is disabled, the rotation will break every login immediately. Meridian caches IdP metadata for 24\u202fhours, so with auto\u2011refresh you would normally pick up the new certificate within that window. The error returns HTTP\u00a0401 and is not retryable.\",\"citations\":[\"S1\",\"S2\",\"S3\",\"S4\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1292,
+  "completion_tokens": 516,
+  "latency_ms": 52711.7
+}

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":false,\"answer\":\"\",\"citations\":[],\"confidence\":0.0,\"missing_information\":\"Phone number for on\u2011call engineer not provided in the sources\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1213,
+  "completion_tokens": 179,
+  "latency_ms": 7714.7
+}

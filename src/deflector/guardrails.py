@@ -185,3 +185,24 @@ def match_policy_intents(text: str) -> list[str]:
         for intent, phrases in CONFIG.policy.escalate_intents.items()
         if any(phrase in lowered for phrase in phrases)
     )
+
+
+_ASSIST_ONLY = {
+    intent: tuple(re.compile(p, re.IGNORECASE) for p in patterns)
+    for intent, patterns in CONFIG.policy.assist_only_intents.items()
+}
+
+
+def match_assist_only_intents(text: str) -> list[str]:
+    """Intents that block auto-resolution without forcing a full escalation.
+
+    Separate from `match_policy_intents` on purpose. A refund request must reach a human because the
+    *decision* is not the system's to make. An action request must reach a human because the *work*
+    is not the system's to do — but the question wrapped around it is still worth answering, so the
+    ticket goes to an agent with a drafted reply rather than to the back of the escalation queue.
+    """
+    return sorted(
+        intent
+        for intent, patterns in _ASSIST_ONLY.items()
+        if any(p.search(text) for p in patterns)
+    )

@@ -1,0 +1,7 @@
+{
+  "text": "{\n  \"supported_claims\": 5,\n  \"unsupported_claims\": 0,\n  \"unsupported_detail\": [],\n  \"citations_valid\": true,\n  \"verdict\": \"pass\"\n}",
+  "model": "inclusionai/ling-3.0-flash:free",
+  "prompt_tokens": 886,
+  "completion_tokens": 323,
+  "latency_ms": 1696.4
+}

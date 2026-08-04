@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Possible reasons for the 401s: you might be sending the key in the wrong way. The API expects a bearer token in the Authorization header: `Authorization: Bearer mk_live_\u2026` [S4]. If you are still using `?api_key=` the request will be rejected with `auth_scheme_unsupported` [S1]. A 401 can also mean the key is missing, truncated, contains whitespace",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1315,
+  "completion_tokens": 900,
+  "latency_ms": 49733.4
+}

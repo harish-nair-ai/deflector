@@ -100,6 +100,31 @@ class ConfidenceConfig:
     the citation point at a real retrieved chunk — carry more weight than anything self-reported.
     """
 
+    # Attach the inline [S1] marker when the model cited exactly one source and used no markers.
+    # OFF, and the reason is the most useful thing I measured on this project.
+    #
+    # The hypothesis was that a missing marker is a formatting slip: same answer, same sources, the
+    # model just forgot the brackets. It looked obviously true — 11 of 17 answerable cases scored 0.0
+    # citation coverage while the verifier scored those same answers 1.0. Repairing it should have
+    # recovered deflection for free.
+    #
+    # It did recover deflection, and it broke precision:
+    #
+    #     repair      auto-resolve rate   precision   wrongly auto-resolved
+    #     off              10.3%            100.0%            0
+    #     on               17.9%             71.4%            2
+    #
+    # The extra auto-resolves were not good answers that had been unfairly held back. They were
+    # `table-service-credit`, which must never auto-resolve, and `webhook-retry-window`, which
+    # auto-sent an answer missing the retry count it was asked for. So the missing marker was not
+    # noise — it was *correlated with the answer being weak*. The model drops citations precisely
+    # when it is synthesising loosely rather than lifting a fact off a source, which is exactly when
+    # it should not be trusted. Repairing the format destroyed a real signal and kept the score.
+    #
+    # Left in the codebase and switchable because the finding is worth more than the code: flip this
+    # to True and re-run `make eval` to reproduce the precision drop.
+    repair_single_source_citations: bool = False
+
     w_verifier: float = 0.40      # independent model's support judgement
     w_retrieval: float = 0.25     # did we actually find relevant material
     w_citation: float = 0.25      # mechanically verified citation coverage
@@ -155,6 +180,40 @@ class PolicyConfig:
             "outage_or_escalation": (
                 "production is down", "everything is failing", "complete outage",
                 "speak to a manager", "escalate this", "this is urgent and",
+            ),
+        }
+    )
+
+    # Requests for someone to *do* something, as opposed to questions about how something works.
+    #
+    # These do not escalate — escalating them would waste a human on a ticket whose question part the
+    # system can answer perfectly well. They cap the route at agent_assist: draft the answer, let a
+    # person perform the action and send it.
+    #
+    # The failure this prevents is subtle and was caught by the golden set. "Send last month's
+    # invoice to priya@… and cc me. What roles can access invoices?" is two requests wearing one
+    # ticket. The roles question is answerable and the system answered it, cited it, and scored 0.887
+    # — comfortably auto-resolve. Auto-sending that reply tells a customer their invoice request was
+    # handled when nothing was sent and no invoice went anywhere. A confident, correct, well-grounded
+    # answer to the wrong half of the ticket is still a false resolution.
+    #
+    # Patterns are deliberately anchored on an imperative or a direct request ("please send",
+    # "can you send") rather than the bare verb, so "how do I send a webhook" stays auto-resolvable.
+    assist_only_intents: dict[str, tuple[str, ...]] = field(
+        default_factory=lambda: {
+            "action_requested": (
+                r"\b(?:please|kindly|could you|can you|can we|would you|pls)\s+"
+                r"(?:\w+\s+){0,2}?(?:send|forward|email|mail|resend|share|attach|issue|"
+                r"update|change|reset|add|remove|enable|disable|extend|raise|increase)\b",
+                r"\bcc\s+me\b",
+                # Indirect object must be a person, not an article. An earlier draft accepted
+                # "send a|the", which fired on "how do I send a webhook payload" and on the
+                # corpus's own prose ("the server will send a retry") — informational sentences,
+                # not requests. Restricting to me/us/them, or to a named deliverable, removes both.
+                r"\b(?:send|forward|email|mail|resend)\s+(?:me|us|them)\b",
+                r"\b(?:send|forward|email|mail|resend)\b[^.?!]{0,30}?"
+                r"\b(?:copy|invoice|receipt|statement|report|export|transcript)\b",
+                r"\bon\s+my\s+behalf\b",
             ),
         }
     )

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The roles that can view (download) invoices are the owner and the billing_admin.\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1111,
+  "completion_tokens": 146,
+  "latency_ms": 8684.3
+}

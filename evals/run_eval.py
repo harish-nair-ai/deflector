@@ -61,6 +61,7 @@ class CaseResult:
     failures: list[str] = field(default_factory=list)
     retrieved_docs: list[str] = field(default_factory=list)
     elapsed_ms: float = 0.0
+    model_ms: float = 0.0
     prompt_tokens: int = 0
     completion_tokens: int = 0
     calls: int = 0
@@ -134,6 +135,9 @@ def evaluate_case(deflector: Deflector, case: dict) -> CaseResult:
         failures=failures,
         retrieved_docs=sorted(set(retrieved_docs)),
         elapsed_ms=elapsed,
+        # Model time, not harness time. On a replayed run `elapsed` is disk-read speed, which is
+        # not a latency any user experiences; the cache preserves what each call originally took.
+        model_ms=usage.latency_ms,
         prompt_tokens=usage.prompt_tokens,
         completion_tokens=usage.completion_tokens,
         calls=usage.calls,
@@ -220,7 +224,7 @@ def report(results: list[CaseResult], wall_seconds: float) -> dict:
     prompt_tokens = sum(r.prompt_tokens for r in results)
     completion_tokens = sum(r.completion_tokens for r in results)
     calls = sum(r.calls for r in results)
-    latencies = sorted(r.elapsed_ms for r in results)
+    latencies = sorted(r.model_ms for r in results if r.model_ms > 0)
     p50 = latencies[len(latencies) // 2] if latencies else 0
     p95 = latencies[int(len(latencies) * 0.95)] if latencies else 0
 

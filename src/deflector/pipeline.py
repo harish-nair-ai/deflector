@@ -33,10 +33,11 @@ from .confidence import (
     Route,
     audit_citations,
     cheap_signals_already_decided,
+    repair_single_source_markers,
     score_confidence,
 )
 from .corpus import Chunk, load_chunks
-from .guardrails import match_policy_intents, screen
+from .guardrails import match_assist_only_intents, match_policy_intents, screen
 from .providers import Provider, Usage
 from .retrieval import Hit, Retriever
 from .semantic_cache import SemanticCache
@@ -144,6 +145,7 @@ class Deflector:
         screened_body = screen(body)
         screened_subject = screen(subject).text if subject else "(none)"
         policy_intents = match_policy_intents(combined)
+        assist_only_intents = match_assist_only_intents(combined)
         safe_query = f"{screened_subject if subject else ''} {screened_body.text}".strip()
 
         # -- 1b. semantic cache -----------------------------------------------------------
@@ -194,6 +196,17 @@ class Deflector:
                 cited_ids = [str(c) for c in (payload.get("citations") or [])]
 
         # -- 4. audit citations (mechanical, no model) ----------------------------------
+        # Repair first: an unambiguous missing marker is a formatting slip, and auditing before
+        # repairing would score it as though the answer were ungrounded. See the function's docstring
+        # for why this is only ever done when exactly one source was cited.
+        #
+        # The repaired text is what the customer sees and what the audit scores, but the *verifier*
+        # is deliberately shown the model's original wording. Two reasons: the verifier's job is to
+        # check claims against sources, and our own formatting edit is not evidence it should weigh;
+        # and feeding it edited text would change its prompt, discarding a valid cached verdict and
+        # spending a live call to re-derive the same answer.
+        verified_text = answer_text
+        answer_text, markers_repaired = repair_single_source_markers(answer_text, cited_ids)
         citation = audit_citations(answer_text, len(hits))
 
         # -- 5. verify, but only when it can change the outcome -------------------------
@@ -212,10 +225,10 @@ class Deflector:
         v_unsupported: int | None = None
         v_detail: list[str] = []
 
-        if not skip_verifier and answer_text:
+        if not skip_verifier and verified_text:
             verdict = self.provider.chat(
                 system=prompts.VERIFY_SYSTEM,
-                user=prompts.VERIFY_USER.format(sources=sources_block, answer=answer_text),
+                user=prompts.VERIFY_USER.format(sources=sources_block, answer=verified_text),
                 model=CONFIG.models.verifier,
                 fallbacks=CONFIG.models.verifier_fallbacks,
                 max_tokens=CONFIG.models.verifier_max_tokens,
@@ -245,6 +258,7 @@ class Deflector:
             sensitive_escalate=screened.escalate_kinds,
             injection=injection,
             n_sources=len(hits),
+            assist_only_intents=assist_only_intents,
         )
 
         if parse_failed:

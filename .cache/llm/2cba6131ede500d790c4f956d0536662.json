@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The download URL is only valid 24 hours after the export completes [S1][S2]. Once it expires it will return a 404. You can request a new pre\u2011signed URL with GET /v1/exports/{id}/url; the export itself remains available for up to 30 days from creation, so you do not need to recreate it [S3].\",\"citations\":[\"S1\",\"S2\",\"S3\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1186,
+  "completion_tokens": 399,
+  "latency_ms": 26989.3
+}

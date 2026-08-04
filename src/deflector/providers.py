@@ -166,6 +166,11 @@ class Provider:
                 completion_tokens=cached.get("completion_tokens", 0),
                 calls=1,
                 cache_hits=1,
+                # Report the latency this call actually took when it was made, not the ~0ms the disk
+                # read takes now. A replayed run must not be able to publish a latency number that no
+                # user would ever experience — reporting 0.0s here would have put "p50 0.0s" in the
+                # README. Wall-clock is reported separately, so a replay still looks like a replay.
+                latency_ms=float(cached.get("latency_ms", 0.0)),
             )
             self.usage.add(usage)
             return LLMResult(

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Yes, the Growth plan has a ceiling of 250 seats [S1]. Any users beyond that would need to be added as extra seats at $15 per month each [S1].\",\"citations\":[\"S1\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1088,
+  "completion_tokens": 512,
+  "latency_ms": 23030.1
+}

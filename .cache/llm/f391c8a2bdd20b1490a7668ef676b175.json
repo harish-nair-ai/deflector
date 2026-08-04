@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The amount field expects values in minor units. 4200 represents $42.00, not $0.42. The dashboard is showing the correct conversion based on the minor\u2011unit value you sent. [S1]\",\"citations\":[\"S1\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1300,
+  "completion_tokens": 203,
+  "latency_ms": 11353.9
+}

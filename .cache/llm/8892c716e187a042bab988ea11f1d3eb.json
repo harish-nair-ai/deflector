@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Meridian will retry delivery for up to roughly 40\u202fhours after the event is first sent. If the endpoint remains unreachable and the event fails eight times, it is marked `undeliverable` and no further attempts are made, but the event can still be replayed from the dashboard for 30\u202fdays.\",\"citations\":[\"S1\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1147,
+  "completion_tokens": 322,
+  "latency_ms": 14729.9
+}

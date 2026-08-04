@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Your annual plan is not refundable after 30 days of the term. Since you signed up 45 days ago, no refund can be issued. You can cancel the subscription to stop the next renewal, which will keep your account active until the end of the paid period before reverting to the Developer plan.[S1][S4]\",\"citations\":[\"S1\",\"S4\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1229,
+  "completion_tokens": 256,
+  "latency_ms": 6914.5
+}

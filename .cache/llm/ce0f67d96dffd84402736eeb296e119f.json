@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The platform keeps the first response for a given Idempotency\u2011Key for 24\u202fhours, after which it is discarded. If you send the same key with a different request body, the API returns a 409 error with the code `idempotency_key_reused`, indicating a client bug and not retryable. [S1][S2][S3]\",\"citations\":[\"S1\",\"S2\",\"S3\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1192,
+  "completion_tokens": 249,
+  "latency_ms": 25009.2
+}

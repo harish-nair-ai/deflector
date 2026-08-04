@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The first response target for an urgent ticket on Enterprise premier support is 15 minutes.\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1149,
+  "completion_tokens": 325,
+  "latency_ms": 41415.9
+}

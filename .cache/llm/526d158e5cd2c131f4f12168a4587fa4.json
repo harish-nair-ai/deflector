@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The signature is calculated over the literal string `{timestamp}.{raw_request_body}` using your signing secret. [S1] If you parse the JSON and then serialise it again, the key order or whitespace changes and the hash will never match. [S1] The error code `webhook_signature_mismatch` is returned when the client has re\u2011serialised the body. [S2] Also reject deliveries where the timestamp `t` is more than five minutes from your server clock, as that will cause a mismatch. [S1]\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1234,
+  "completion_tokens": 539,
+  "latency_ms": 25800.5
+}

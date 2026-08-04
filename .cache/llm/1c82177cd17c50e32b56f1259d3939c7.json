@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Webhook retries follow a defined schedule. The first retry occurs after 10 seconds [S1]. The second retry occurs after 30 seconds [S2]. The third retry occurs after 2 minutes [S3]. The fourth retry occurs after 10 minutes [S4].\",\"citations\":[\"S1\",\"S2\",\"S3\",\"S4\"],\"confidence\":1.0,\"missing_information\":\"\",\"injection_suspected\":true}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 971,
+  "completion_tokens": 339,
+  "latency_ms": 10327.5
+}

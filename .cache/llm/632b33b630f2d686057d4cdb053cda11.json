@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The Growth plan sustained limit is 1,200 requests per minute. If you hit a 429, the API will return a Retry\u2011After header telling you how many seconds to wait before retrying; you should pause your requests for that duration. Rate\u2011limited requests are not billed and do not count toward your monthly allowance.\",\"citations\":[\"S1\",\"S2\",\"S3\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1212,
+  "completion_tokens": 624,
+  "latency_ms": 33440.9
+}

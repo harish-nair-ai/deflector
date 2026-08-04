@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Enterprise contracts cannot be cancelled self\u2011serve. They are governed by the termination clause in the signed order form, which normally requires 60 days written notice before the renewal date. Cancelling from Settings stops the next renewal; the account keeps full access until the end of the paid period, then reverts to the Developer plan. [S1]\",\"citations\":[\"S1\"],\"confidence\":0.9,\"missing_information\":\"The specific renewal date and any contractual terms beyond the 60\u2011day notice requirement.\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1073,
+  "completion_tokens": 512,
+  "latency_ms": 37664.6
+}

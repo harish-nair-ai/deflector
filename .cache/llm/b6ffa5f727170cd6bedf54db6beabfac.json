@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Only a user with the owner role can cancel the plan. The billing_admin role does not have permission to cancel. [S1][S2][S3]\",\"citations\":[\"S1\",\"S2\",\"S3\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1165,
+  "completion_tokens": 355,
+  "latency_ms": 36767.3
+}

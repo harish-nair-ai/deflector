@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"A 401 with the code `auth_invalid` indicates the key is not recognised or has been revoked, so the request is unauthorised [S1]. A 403 with the code `scope_insufficient` means the key is recognised but does not have the required scope for the requested operation, so the request is forbidden [S1].\",\"citations\":[\"S1\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1264,
+  "completion_tokens": 236,
+  "latency_ms": 29998.0
+}

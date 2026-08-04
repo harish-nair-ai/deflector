@@ -1,15 +1,15 @@
 {
   "total": 39,
-  "passed": 27,
-  "auto_resolve_precision": 0.6666666666666666,
-  "wrongly_auto_resolved": 2,
-  "held_back_correctly": 0.9583333333333334,
+  "passed": 29,
+  "auto_resolve_precision": 1.0,
+  "wrongly_auto_resolved": 0,
+  "held_back_correctly": 1.0,
   "deflection_rate": 0.38461538461538464,
-  "auto_resolve_rate": 0.15384615384615385,
+  "auto_resolve_rate": 0.10256410256410256,
   "routes": {
-    "auto_resolve": 6,
-    "agent_assist": 9,
-    "escalate": 24
+    "escalate": 24,
+    "agent_assist": 11,
+    "auto_resolve": 4
   },
   "by_type": {
     "answerable": {
@@ -17,7 +17,7 @@
       "total": 8
     },
     "table_lookup": {
-      "passed": 2,
+      "passed": 3,
       "total": 8
     },
     "figure_lookup": {
@@ -33,7 +33,7 @@
       "total": 5
     },
     "sensitive": {
-      "passed": 2,
+      "passed": 3,
       "total": 3
     },
     "sensitive_benign": {
@@ -50,16 +50,16 @@
     }
   },
   "tokens": {
-    "prompt": 30134,
-    "completion": 10165,
-    "calls": 31,
-    "per_ticket_prompt": 772.6666666666666,
-    "per_ticket_completion": 260.64102564102564,
-    "calls_per_ticket": 0.7948717948717948
+    "prompt": 56496,
+    "completion": 19851,
+    "calls": 55,
+    "per_ticket_prompt": 1448.6153846153845,
+    "per_ticket_completion": 509.0,
+    "calls_per_ticket": 1.4102564102564104
   },
   "latency_ms": {
-    "p50": 1044.070666997868,
-    "p95": 35998.241041001165
+    "p50": 22650.3,
+    "p95": 54408.1
   },
   "thresholds": {
     "high": 0.72,
@@ -76,11 +76,13 @@
       "id": "rate-limit-growth",
       "type": "answerable",
       "expected": "auto_resolve",
-      "actual": "auto_resolve",
-      "band": "High",
-      "score": 0.9018,
-      "passed": true,
-      "failures": []
+      "actual": "escalate",
+      "band": "Low",
+      "score": 0.4468,
+      "passed": false,
+      "failures": [
+        "route: expected auto_resolve, got escalate"
+      ]
     },
     {
       "id": "webhook-retry-window",
@@ -124,7 +126,7 @@
       "expected": "auto_resolve",
       "actual": "auto_resolve",
       "band": "High",
-      "score": 0.8211,
+      "score": 0.8212,
       "passed": true,
       "failures": []
     },
@@ -132,36 +134,34 @@
       "id": "sso-cert-rotation",
       "type": "answerable",
       "expected": "not_auto",
-      "actual": "auto_resolve",
-      "band": "High",
-      "score": 0.8929,
-      "passed": false,
-      "failures": [
-        "route: expected not_auto, got auto_resolve"
-      ]
+      "actual": "agent_assist",
+      "band": "Medium",
+      "score": 0.6429,
+      "passed": true,
+      "failures": []
     },
     {
       "id": "export-url-expiry",
       "type": "answerable",
       "expected": "auto_resolve",
-      "actual": "auto_resolve",
-      "band": "High",
-      "score": 0.8725,
+      "actual": "escalate",
+      "band": "Low",
+      "score": 0.7092,
       "passed": false,
       "failures": [
-        "missing required text: '24 hour'"
+        "route: expected auto_resolve, got escalate"
       ]
     },
     {
       "id": "amount-minor-units",
       "type": "answerable",
       "expected": "auto_resolve",
-      "actual": "agent_assist",
-      "band": "Medium",
-      "score": 0.6179,
+      "actual": "escalate",
+      "band": "Low",
+      "score": 0.4179,
       "passed": false,
       "failures": [
-        "route: expected auto_resolve, got agent_assist"
+        "route: expected auto_resolve, got escalate"
       ]
     },
     {
@@ -170,7 +170,7 @@
       "expected": "auto_resolve",
       "actual": "agent_assist",
       "band": "Medium",
-      "score": 0.652,
+      "score": 0.452,
       "passed": false,
       "failures": [
         "route: expected auto_resolve, got agent_assist"
@@ -180,13 +180,11 @@
       "id": "table-max-seats-growth",
       "type": "table_lookup",
       "expected": "auto_resolve",
-      "actual": "agent_assist",
-      "band": "Medium",
-      "score": 0.6519,
-      "passed": false,
-      "failures": [
-        "route: expected auto_resolve, got agent_assist"
-      ]
+      "actual": "auto_resolve",
+      "band": "High",
+      "score": 0.9019,
+      "passed": true,
+      "failures": []
     },
     {
       "id": "table-role-cannot-cancel",
@@ -194,7 +192,7 @@
       "expected": "auto_resolve",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.4291,
+      "score": 0.4241,
       "passed": false,
       "failures": [
         "route: expected auto_resolve, got escalate"
@@ -204,23 +202,23 @@
       "id": "table-error-region-mismatch",
       "type": "table_lookup",
       "expected": "auto_resolve",
-      "actual": "auto_resolve",
-      "band": "High",
-      "score": 0.7824,
-      "passed": true,
-      "failures": []
+      "actual": "agent_assist",
+      "band": "Medium",
+      "score": 0.6574,
+      "passed": false,
+      "failures": [
+        "route: expected auto_resolve, got agent_assist"
+      ]
     },
     {
       "id": "table-error-page-spanning",
       "type": "table_lookup",
       "expected": "auto_resolve",
-      "actual": "agent_assist",
-      "band": "Medium",
-      "score": 0.5348,
-      "passed": false,
-      "failures": [
-        "route: expected auto_resolve, got agent_assist"
-      ]
+      "actual": "auto_resolve",
+      "band": "High",
+      "score": 0.8647,
+      "passed": true,
+      "failures": []
     },
     {
       "id": "table-sev1-target",
@@ -260,9 +258,9 @@
       "id": "figure-usage-projection",
       "type": "figure_lookup",
       "expected": "not_auto",
-      "actual": "escalate",
-      "band": "Low",
-      "score": 0.6307,
+      "actual": "agent_assist",
+      "band": "Medium",
+      "score": 0.6757,
       "passed": true,
       "failures": []
     },
@@ -282,7 +280,7 @@
       "expected": "escalate",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.5214,
+      "score": 0.5213,
       "passed": true,
       "failures": []
     },
@@ -292,7 +290,7 @@
       "expected": "escalate",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.5215,
+      "score": 0.5108,
       "passed": true,
       "failures": []
     },
@@ -332,7 +330,7 @@
       "expected": "escalate",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.5805,
+      "score": 0.4206,
       "passed": true,
       "failures": []
     },
@@ -342,7 +340,7 @@
       "expected": "escalate",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.6033,
+      "score": 0.4434,
       "passed": true,
       "failures": []
     },
@@ -352,7 +350,7 @@
       "expected": "escalate",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.5894,
+      "score": 0.4294,
       "passed": true,
       "failures": []
     },
@@ -362,7 +360,7 @@
       "expected": "escalate",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.5968,
+      "score": 0.6368,
       "passed": true,
       "failures": []
     },
@@ -372,7 +370,7 @@
       "expected": "escalate",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.5645,
+      "score": 0.6545,
       "passed": true,
       "failures": []
     },
@@ -382,11 +380,9 @@
       "expected": "escalate",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.5766,
-      "passed": false,
-      "failures": [
-        "detector missed: credit_card"
-      ]
+      "score": 0.4177,
+      "passed": true,
+      "failures": []
     },
     {
       "id": "sensitive-api-key-pasted",
@@ -402,9 +398,9 @@
       "id": "sensitive-email-only-should-not-escalate",
       "type": "sensitive_benign",
       "expected": "not_auto",
-      "actual": "escalate",
-      "band": "Low",
-      "score": 0.5967,
+      "actual": "agent_assist",
+      "band": "High",
+      "score": 0.8867,
       "passed": true,
       "failures": []
     },
@@ -412,9 +408,9 @@
       "id": "sensitive-invoice-number-not-a-card",
       "type": "sensitive_benign",
       "expected": "",
-      "actual": "escalate",
-      "band": "Low",
-      "score": 0.568,
+      "actual": "agent_assist",
+      "band": "Medium",
+      "score": 0.613,
       "passed": true,
       "failures": []
     },
@@ -444,7 +440,7 @@
       "expected": "escalate",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.5667,
+      "score": 0.6167,
       "passed": true,
       "failures": []
     },
@@ -464,7 +460,7 @@
       "expected": "not_auto",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.5931,
+      "score": 0.4331,
       "passed": true,
       "failures": []
     },
@@ -474,7 +470,7 @@
       "expected": "not_auto",
       "actual": "escalate",
       "band": "Low",
-      "score": 0.6141,
+      "score": 0.614,
       "passed": true,
       "failures": []
     },

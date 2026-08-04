@@ -1,0 +1,7 @@
+{
+  "text": "{\n  \"supported_claims\": 1,\n  \"unsupported_claims\": 1,\n  \"unsupported_detail\": [\"The dashboard is showing the correct conversion based on the minor\u2011unit value you sent.\"],\n  \"citations_valid\": false,\n  \"verdict\": \"fail\"\n}",
+  "model": "inclusionai/ling-3.0-flash:free",
+  "prompt_tokens": 861,
+  "completion_tokens": 241,
+  "latency_ms": 1769.6
+}

@@ -376,6 +376,31 @@ GDPR erasure, security incidents and legal threats route to a human at any confi
 "The model knows the answer" and "the model is allowed to end this conversation" are different
 questions. Conflating them is how support automation ends up issuing refunds it should not have.
 
+### One softer control: the assist-only cap
+
+Not every "a human must touch this" is an escalation. Escalating a ticket whose question the system
+answered perfectly wastes the human it was supposed to save, so there is a second, gentler control
+that caps the route at `agent_assist` without forcing `escalate`.
+
+It exists because of a failure the golden set caught. Consider:
+
+> *"Could you send a copy of last month's invoice to priya.sharma@northwind.example and cc me?
+> **What roles can access invoices?**"*
+
+That is two requests wearing one ticket. The system answered the roles question, cited it correctly,
+and scored it **0.887** — comfortably auto-resolve. The email address is redact-tier, so nothing
+escalated. And auto-sending that reply tells a customer their invoice request was handled when
+nothing was sent and no invoice went anywhere.
+
+**A confident, correct, well-grounded answer to the wrong half of a ticket is still a false
+resolution.** So requests to *do* something — send, forward, reset, cancel on my behalf — cap at
+`agent_assist`: the draft goes to an agent who performs the action and sends it. The confidence band
+stays High, because it honestly is. Only the authority is capped.
+
+The patterns are anchored on an imperative or direct request rather than the bare verb, so *"how do I
+send a webhook payload"* stays auto-resolvable. Adding this moved auto-resolve precision from 80.0%
+to **100.0%** and wrongly-auto-resolved from 1 to **0**.
+
 ### The verifier is skipped when it cannot change the outcome
 
 The verifier is the most expensive step. If a hard gate has already tripped, the ticket is going to a
@@ -445,14 +470,32 @@ is one table row away from a similar-looking one, tickets carrying secrets, tick
 attempts, and questions whose answer is correct but whose *action* needs a human.
 
 <!-- RESULTS:START -->
-> **Results pending a full re-run.** The first complete run was invalidated part-way through by
-> OpenRouter's free-tier daily cap (50 requests/day; the golden set needs roughly 78 calls), so the
-> numbers it produced measured rate-limit failures rather than system behaviour. Reporting them would
-> have been worse than reporting nothing.
->
-> Re-run with `make eval` after the quota resets. Because cached responses do not consume quota, the
-> run accumulates across days and then completes. `python tools/update_readme_results.py` writes the
-> measured numbers into this section.
+Measured on the 39-case golden set. Answerer `openai/gpt-oss-20b:free`, independent verifier `inclusionai/ling-3.0-flash:free`.
+
+| Metric | Value | What it means |
+|---|---:|---|
+| **Auto-resolve precision** | **100.0%** | Of answers sent with no human involved, the share that were correct. **The number that decides whether this ships.** |
+| **Wrongly auto-resolved** | **0** | Tickets where a wrong answer reached the customer. |
+| Held back correctly | 100.0% | Of cases that must not be auto-answered, the share the gate actually held. |
+| Deflection rate | 38.5% | Tickets resolved or drafted without a human owning them. |
+| Auto-resolve rate | 10.3% | Sent with no human at all. |
+| Case pass rate | 29/39 | All assertions, including required facts and forbidden phrases. |
+
+Routing mix: **4 auto-resolve** · **11 agent-assist** · **24 escalate**.
+
+| Case type | Passed |
+|---|---:|
+| Answerable from prose | 3/8 |
+| Answerable only from a table | 3/8 |
+| Not in the corpus (must abstain) | 6/6 |
+| Correct answer, action needs a human | 5/5 |
+| Sensitive data present | 3/3 |
+| Prompt injection | 3/3 |
+| Ambiguous or partially covered | 3/3 |
+| Benign PII (must not over-escalate) | 2/2 |
+| Answerable only from a figure | 1/1 |
+
+Latency p50 **22.7s**, p95 **54.4s**. **1.41** model calls per ticket (under two because the verifier is skipped once a hard gate has already decided the outcome).
 <!-- RESULTS:END -->
 
 ### The operating point is a business decision, not a constant
@@ -486,21 +529,22 @@ three things:
   code, and the diff is caused by you.
 - **Rate limits stop being fatal.** A partially-completed run resumes for free.
 
-> **Current cache state — honest note.** A fix to how the ticket subject is passed into the prompt
-> (it was being duplicated into the body) changed the request, and therefore the cache key, for every
-> answerer call. The committed fixtures predate that fix, so they no longer match the current code
-> path and the answerer replays as a miss. The fix is correct and stays; the fixtures are regenerated
-> by the next full `make eval`, which is already pending the quota reset. Until then, offline replay
-> reproduces the *screening and routing* behaviour but not the generated answers.
+One detail worth stating, because it decides whether a published latency number is real. On a
+replayed run the harness measures disk-read speed, which is not a latency any user experiences —
+reporting it would have put "p50 0.0s" in the table above. The cache stores the latency each call
+took *when it was actually made*, and that is what gets reported; wall-clock time is printed
+separately, so a replay still looks like a replay.
 
 ---
 
-## Two standard techniques I built, measured, and turned off
+## Three things I built, measured, and turned off
 
-Both a cross-encoder reranker and a semantic answer cache are implemented, tested and shipped
-**disabled**. They are in the repo because the measurement is the interesting part: adding a SOTA
-component because it is standard, without checking whether it helps *here*, is how systems get slow
-and wrong at the same time.
+A cross-encoder reranker, a semantic answer cache, and a citation-format repair are all implemented,
+tested and shipped **disabled**. They are in the repo because the measurement is the interesting
+part: adding a SOTA component because it is standard, without checking whether it helps *here*, is
+how systems get slow and wrong at the same time.
+
+The third one is the one I would want to be asked about, because I was wrong about it.
 
 ### Reranking — `make eval-retrieval`
 
@@ -556,17 +600,58 @@ require an exact match), not a higher threshold. Until that exists it stays off,
 `tests/test_rerank_and_cache.py` encodes the property so nobody re-enables it without meeting the
 reason it was disabled.
 
+### Citation-format repair — the one where the measurement changed my mind
+
+The first full golden-set run showed something that looked like an obvious bug. **11 of 17 answerable
+cases scored 0.0 citation coverage while the verifier independently scored those same answers 1.0.**
+The model was returning a correct answer and a correct `citations` array, and simply omitting the
+inline `[S1]` markers. Citation coverage carries a quarter of the confidence weight, so a formatting
+slip was dragging good answers below the auto-resolve bar.
+
+The fix seemed free: when the model cites exactly one source and uses no inline markers, the mapping
+from claim to source is the only one possible, so write the marker in. No guessing, no invented
+attribution. (Multi-source answers were left alone — deciding which claim came from which document
+*is* a judgement, and guessing it would be fabricating exactly what this system exists to prevent.)
+
+It worked, and it made the system worse:
+
+| Repair | Auto-resolve rate | Auto-resolve precision | Wrongly auto-resolved |
+|---|---:|---:|---:|
+| **off (shipped)** | 10.3% | **100.0%** | **0** |
+| on | 17.9% | 71.4% | 2 |
+
+The recovered deflection was not good answers that had been unfairly held back. It was
+`table-service-credit`, which must never auto-resolve, and `webhook-retry-window`, which auto-sent an
+answer missing the retry count the customer asked for.
+
+**The missing marker was not noise — it was correlated with the answer being weak.** The model drops
+citations precisely when it is synthesising loosely instead of lifting a fact off a source, which is
+exactly the situation where it should not be trusted. The audit was accidentally measuring something
+real, and "fixing the formatting" destroyed the signal while leaving the score intact.
+
+This is why the low prose and table pass rates (3/8 each) are reported as-is rather than tuned away.
+They are dominated by cases where the model answered correctly but did not cite, and the correct
+response to that is to make the *model* cite — a prompt and model-selection problem — not to award
+coverage it did not earn. The repair stays in the codebase behind
+`ConfidenceConfig.repair_single_source_citations` so the result is reproducible: flip it to `True`,
+run `make eval`, watch precision fall.
+
 ---
 
 ## Cost per 1,000 queries
 
 <!-- COST:START -->
-> Generated by `tools/cost_model.py` from measured token counts once the eval completes.
->
-> Token counts come from the eval harness — what the pipeline actually consumed, not an estimate of
-> prompt length. Prices are published list rates as at 3 August 2026. The two are kept separate on
-> purpose: token usage is a property of this system and I measured it; list prices are a property of
-> the vendor and change without me.
+Measured per ticket: **1,449 prompt tokens**, **509 completion tokens**, **1.41 model calls** (n=39 golden-set tickets).
+
+| Model (answer + verify) | $/1,000 tickets | With prompt caching | Annual at 500/day |
+|---|---:|---:|---:|
+| claude-haiku-4.5 | $3.99 | $3.45 | $629 |
+| gpt-4.1-mini | $1.39 | $1.21 | $221 |
+| gemini-2.5-flash | $1.71 | $1.54 | $282 |
+| gpt-4.1-nano | $0.35 | $0.30 | $55 |
+| claude-sonnet-4.5 | $11.98 | $10.34 | $1,887 |
+
+Embedding adds $0.0004 per 1,000 tickets (18 tokens/query at $0.02/M) — the corpus index is built once, not per query.
 <!-- COST:END -->
 
 **Where the cost actually goes, and what to do about it:**

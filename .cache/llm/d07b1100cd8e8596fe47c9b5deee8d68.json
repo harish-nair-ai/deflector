@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"If a live key has been exposed you should rotate it immediately. Meridian keys are 40 characters long after the prefix and are stored only as a hash, so a lost key cannot be recovered \u2013 it must be replaced with a new key and the old one retired [S1][S4].\",\"citations\":[\"S1\",\"S4\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1081,
+  "completion_tokens": 375,
+  "latency_ms": 22650.3
+}

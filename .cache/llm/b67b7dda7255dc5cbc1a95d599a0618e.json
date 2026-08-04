@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"Overage charges are not refundable unless the excess usage was caused by an incident on Meridian\u2019s side. Waiving an overage charge is not within the scope of support actions without finance approval. Therefore we cannot waive the $2,400 overage you received.\",\"citations\":[\"S1\",\"S2\",\"S4\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1331,
+  "completion_tokens": 208,
+  "latency_ms": 11837.4
+}

@@ -1,0 +1,7 @@
+{
+  "text": "```json\n{\n  \"supported_claims\": 4,\n  \"unsupported_claims\": 1,\n  \"unsupported_detail\": [\"Once it expires it will return a 404\"],\n  \"citations_valid\": true,\n  \"verdict\": \"fail\"\n}\n```",
+  "model": "inclusionai/ling-3.0-flash:free",
+  "prompt_tokens": 776,
+  "completion_tokens": 478,
+  "latency_ms": 3364.3
+}

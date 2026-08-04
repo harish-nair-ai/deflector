@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"You would be entitled to a 25% service credit of your monthly fee.\",\"citations\":[\"S3\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1191,
+  "completion_tokens": 199,
+  "latency_ms": 12842.1
+}

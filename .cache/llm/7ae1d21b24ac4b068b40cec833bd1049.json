@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"The region_mismatch error indicates that the account is pinned to a different region. It returns HTTP 403 and is not retryable.\",\"citations\":[\"S1\"],\"confidence\":0.95,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1030,
+  "completion_tokens": 205,
+  "latency_ms": 18004.2
+}

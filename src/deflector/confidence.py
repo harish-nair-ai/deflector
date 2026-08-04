@@ -91,6 +91,47 @@ _CLAIM_MARKERS = re.compile(
 _CITE = re.compile(r"\[S(\d+)\]")
 
 
+def repair_single_source_markers(answer: str, cited_markers: list[str]) -> tuple[str, bool]:
+    """Attach the inline marker the model forgot, but only when there is no ambiguity about it.
+
+    The answerer is asked to mark every claim sentence with `[S1]`-style markers. It complies most of
+    the time and then, on maybe a third of tickets, returns a correct answer with a correct
+    `citations` array and no inline markers at all. That is a *formatting* miss, not a grounding
+    miss, and the citation audit scored it 0.0 — a quarter of the confidence weight — which pushed
+    good answers into escalation. Measured on the golden set: 11 of 17 answerable cases scored 0.0
+    coverage while the verifier scored them 1.0.
+
+    So repair it, under one strict condition: the model cited exactly one source and used no inline
+    markers anywhere. Then the mapping from claim to source is the only one possible, and writing it
+    in adds no information the model did not already give us. With two or more sources the mapping is
+    a real judgement — which claim came from which document — and guessing it would be inventing
+    attribution, which is precisely the failure this system exists to prevent. Those stay at whatever
+    coverage the model actually earned.
+    """
+    if not CONFIG.confidence.repair_single_source_citations:
+        return answer, False
+    if len(set(cited_markers)) != 1 or _CITE.search(answer):
+        return answer, False
+
+    marker = cited_markers[0]
+    sentences = [s for s in re.split(r"(?<=[.!?])\s+", answer) if s.strip()]
+    repaired: list[str] = []
+    for sentence in sentences:
+        if not _CLAIM_MARKERS.search(sentence):
+            repaired.append(sentence)
+            continue
+        # Insert *before* the terminal punctuation. Appending after it looks equivalent but is not:
+        # the audit re-splits on sentence boundaries, so a trailing " [S1]" is parsed as the opening
+        # of the *next* sentence. That credits the wrong sentence and leaves the real claim looking
+        # uncited — it scored a fully-repaired two-sentence answer at 0.5 instead of 1.0.
+        stripped = sentence.rstrip()
+        if stripped and stripped[-1] in ".!?":
+            repaired.append(f"{stripped[:-1].rstrip()} [{marker}]{stripped[-1]}")
+        else:
+            repaired.append(f"{stripped} [{marker}]")
+    return " ".join(repaired), True
+
+
 def audit_citations(answer: str, n_sources: int) -> CitationAudit:
     """Mechanically check citation coverage and validity. No model involved.
 
@@ -140,10 +181,12 @@ def score_confidence(
     sensitive_escalate: list[str],
     injection: bool,
     n_sources: int,
+    assist_only_intents: list[str] | None = None,
 ) -> Decision:
     cfg = CONFIG.confidence
     gates: list[str] = []
     reasons: list[str] = []
+    assist_only_intents = assist_only_intents or []
 
     # ---- signal: retrieval ------------------------------------------------------------
     s_retrieval = max(0.0, min(1.0, retrieval_strength))
@@ -215,6 +258,15 @@ def score_confidence(
         band = Band.LOW
         route = Route.ESCALATE
         reasons.append("hard gate tripped — routed to a human regardless of score")
+    elif score >= cfg.high and assist_only_intents:
+        # The answer is good enough to send; the ticket is not one we may close. Keep the band
+        # honest — the confidence really is High — and cap only the route.
+        band, route = Band.HIGH, Route.AGENT_ASSIST
+        reasons.append(
+            "assist_only_intent:"
+            + ",".join(assist_only_intents)
+            + " — ticket asks for an action, so the drafted answer goes to an agent, not the customer"
+        )
     elif score >= cfg.high:
         band, route = Band.HIGH, Route.AUTO_RESOLVE
     elif score >= cfg.medium:

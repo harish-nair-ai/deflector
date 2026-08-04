@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"We do not manually charge cards. If a payment fails we automatically retry on day\u202f1,\u202f3,\u202f5 and\u202f7, sending an email to all billing_admin users each time. After the fourth failed attempt the account moves to past_due, where write endpoints are rejected with a 402 and scheduled exports are suspended. [S1]\",\"citations\":[\"S1\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1266,
+  "completion_tokens": 308,
+  "latency_ms": 13779.3
+}

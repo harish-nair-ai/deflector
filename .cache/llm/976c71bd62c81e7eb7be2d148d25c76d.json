@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":false,\"answer\":\"\",\"citations\":[],\"confidence\":0.0,\"missing_information\":\"No information about nonprofit or educational discounts in the sources\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1131,
+  "completion_tokens": 338,
+  "latency_ms": 36451.8
+}

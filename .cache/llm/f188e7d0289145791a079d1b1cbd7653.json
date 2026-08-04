@@ -1,0 +1,7 @@
+{
+  "text": "```json\n{\n  \"supported_claims\": 2,\n  \"unsupported_claims\": 0,\n  \"unsupported_detail\": [],\n  \"citations_valid\": true,\n  \"verdict\": \"pass\"\n}\n```",
+  "model": "inclusionai/ling-3.0-flash:free",
+  "prompt_tokens": 895,
+  "completion_tokens": 481,
+  "latency_ms": 6858.5
+}

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":false,\"answer\":\"\",\"citations\":[],\"confidence\":0.0,\"missing_information\":\"Whether the account is locked or not; no source provides this information\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1088,
+  "completion_tokens": 260,
+  "latency_ms": 17983.0
+}

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"To comply with your GDPR erasure request, you must submit a deletion request from Settings \u2192 Privacy \u2192 Delete data or by emailing the privacy team. [S1] Once confirmed, the deletion will complete within 30 days. [S1] Backups are purged on their own rolling cycle and will be fully removed within 90 days. [S1] A deletion certificate will be issued on completion if you requested it at submission time. [S1] Deletion is irreversible; support cannot restore deleted data. [S1] Cancelling your subscription does not delete data; you need to submit a separate deletion request. [S2]\",\"citations\":[\"S1\",\"S2\"],\"confidence\":0.9,\"missing_information\":\"The specific email address or confirmation steps are not detailed in the sources.\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1190,
+  "completion_tokens": 609,
+  "latency_ms": 61957.7
+}

@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":false,\"answer\":\"\",\"citations\":[],\"confidence\":0.0,\"missing_information\":\"Whether the platform signs a BAA or supports HIPAA\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1055,
+  "completion_tokens": 137,
+  "latency_ms": 7663.3
+}

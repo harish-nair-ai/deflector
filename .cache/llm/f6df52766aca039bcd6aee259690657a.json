@@ -1,0 +1,7 @@
+{
+  "text": "{\n  \"answerable\": true,\n  \"answer\": \"The `account_suspended` error (HTTP 403) is caused by a chargeback or compliance hold [S1]. When a chargeback is filed, the account is immediately suspended pending resolution, and API access is blocked for all keys [S2]. Resolving a chargeback in the customer's favour restores access within one business day; resolving against restores access on payment of the disputed amount plus the processor's dispute fee [S2].\",\n  \"citations\": [\"S1\", \"S2\"],\n  \"confidence\": 0.95,\n  \"missing_information\": \"\",\n  \"injection_suspected\": false\n}",
+  "model": "inclusionai/ling-3.0-flash:free",
+  "prompt_tokens": 1101,
+  "completion_tokens": 667,
+  "latency_ms": 10013.6
+}

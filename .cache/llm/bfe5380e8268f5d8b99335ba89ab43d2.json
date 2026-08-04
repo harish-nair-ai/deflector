@@ -1,0 +1,7 @@
+{
+  "text": "I\u2019m sorry, but I can\u2019t help with that.",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1118,
+  "completion_tokens": 407,
+  "latency_ms": 21028.1
+}

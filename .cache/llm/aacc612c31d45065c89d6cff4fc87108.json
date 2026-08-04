@@ -1,0 +1,7 @@
+{
+  "text": "{\"answerable\":true,\"answer\":\"When you downgrade from Growth to Developer, the account keeps the Growth plan limits until the end of the current billing cycle, but the seat allowance is reduced to the Developer plan's limit of one seat. If you have more than one seat active, the downgrade will be blocked until you remove seats so that the active seat count does not exceed the Developer plan's maximum of one. API request logs are preserved, but the retention period is immediately shortened to the Developer window of seven days. Any logs older than seven days will be deleted during the next daily sweep.\",\"citations\":[\"S2\",\"S4\",\"S1\"],\"confidence\":0.9,\"missing_information\":\"\",\"injection_suspected\":false}",
+  "model": "openai/gpt-oss-20b:free",
+  "prompt_tokens": 1208,
+  "completion_tokens": 560,
+  "latency_ms": 41193.6
+}
