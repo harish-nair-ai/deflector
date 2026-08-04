@@ -24,6 +24,9 @@ ingest-stress: fetch-stress  ## Parse the real-world stress corpus (arXiv, IRS f
 index:  ## Build the embedding index
 	$(PY) -m deflector index
 
+minimal:  ## Run the single-file version — the brief, ~200 lines, no package: make minimal Q="..."
+	@$(PY) minimal.py "$(Q)"
+
 demo:  ## Run four tickets that show each routing outcome
 	@$(PY) -m deflector ask "We're on Growth and getting 429s at around 900 requests a minute. What's our actual limit?" --subject "Rate limits"
 	@$(PY) -m deflector ask "We signed up annually 45 days ago. We'd like a refund of the remaining balance." --subject "Refund request"

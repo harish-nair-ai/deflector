@@ -9,6 +9,127 @@ billing, API limits and integration errors, with response times at 48 hours.
 
 ---
 
+## Start here — the whole idea in one file
+
+This repo is bigger than the brief asked for, so here is the honest reading path.
+
+**[`minimal.py`](minimal.py) is the brief.** 167 lines of code, one dependency, no imports from `src/`.
+It loads the docs, retrieves with BM25, answers with citations, audits them mechanically, and makes
+the three-way routing call. It runs:
+
+```bash
+python minimal.py "We're on Growth and getting 429s. What's our actual limit?"
+```
+
+The bottom of that file lists **six things it gets wrong** — each one reproducible, each one the
+reason a specific part of `src/deflector/` exists. That list is the argument for everything else
+here. If you read nothing else, read `minimal.py` top to bottom and then that list.
+
+| If you have… | Read |
+|---|---|
+| **5 minutes** | `minimal.py`, then [the measured results](#evaluation) |
+| **15 minutes** | + `src/deflector/confidence.py` — the signals, the gates, the routing decision. This is the heart |
+| **30 minutes** | + [Three things I built, measured, and turned off](#three-things-i-built-measured-and-turned-off) — the reranker, the semantic cache, and the one where the measurement changed my mind |
+| **Reviewing properly** | `make test` (79 tests, <1s, offline) then `make eval` (replays from a committed cache — no API key, no spend) |
+
+**What is *not* worth your time on a first pass:** `ingest.py` (772 lines, all build-time — PDF and
+table parsing), and `rerank.py` / `semantic_cache.py`, which are both measured and **shipped
+disabled**. The request path you would actually defend in review is ~1,400 lines across
+`pipeline.py`, `confidence.py`, `guardrails.py`, `retrieval.py` and `prompts.py`.
+
+---
+
+## How it works
+
+Start with the shape of it. A ticket comes in, and the only question that matters is which of three
+places it should end up:
+
+```mermaid
+flowchart LR
+    T([ticket]) --> D{how confident,<br/>and are we<br/>allowed to send?}
+    D -->|high, no gate| A[auto_resolve<br/><i>reply sent, no human</i>]
+    D -->|medium| B[agent_assist<br/><i>draft, agent sends</i>]
+    D -->|low, or any gate| C[escalate<br/><i>human owns it</i>]
+
+    style A fill:#1a7f37,stroke:#1a7f37,color:#fff
+    style B fill:#9a6700,stroke:#9a6700,color:#fff
+    style C fill:#cf222e,stroke:#cf222e,color:#fff
+```
+
+Now the pipeline that produces that decision. Six steps, and the order is load-bearing — screening
+runs *first* so that a pasted API key never leaves the process, and verification runs *last* and
+only when it can still change the answer:
+
+```mermaid
+flowchart TD
+    T([ticket: subject + body]) --> S
+
+    S["<b>1 · SCREEN</b> — guardrails.py<br/>redact email/phone/IP · detect cards/keys<br/>match injection · match policy intents"]
+    S --> R["<b>2 · RETRIEVE</b> — retrieval.py<br/>BM25 top-12 + dense top-12<br/>fused with RRF k=60 → top-4"]
+    R --> G["<b>3 · ANSWER</b> — prompts.py<br/>strict JSON, with answerable:false<br/>as a valid refusal path"]
+    G --> C["<b>4 · AUDIT</b> — confidence.py<br/><i>mechanical, no model</i><br/>does every claim carry a real citation?"]
+    C --> V{"a gate already<br/>decided?"}
+    V -->|yes| K
+    V -->|no| VF["<b>5 · VERIFY</b> — a <i>different</i> model<br/>checks claims against sources"]
+    VF --> K["<b>6 · GATE</b> — confidence.py<br/>blend 4 signals · apply 9 hard gates · route"]
+    K --> OUT([route + answer + full decision record])
+
+    style S fill:#cf222e,stroke:#cf222e,color:#fff
+    style K fill:#8250df,stroke:#8250df,color:#fff
+    style C fill:#0969da,stroke:#0969da,color:#fff
+```
+
+That branch before step 5 matters for cost: **the verifier is skipped whenever a hard gate has
+already decided the outcome**, because spending a second model call to confirm a decision that is already made is
+pure waste. That is most of why this runs at 1.41 calls per ticket rather than 2.
+
+Finally, the gate itself — the part worth arguing about. Four signals blend into a score, but nine
+conditions override that score entirely:
+
+```mermaid
+flowchart TD
+    subgraph BLEND ["blended score — a smooth function"]
+        V["verifier<br/><b>0.40</b>"] --> SC(( ))
+        RT["retrieval<br/><b>0.25</b>"] --> SC
+        CI["citation audit<br/><b>0.25</b>"] --> SC
+        SR["model self-report<br/><b>0.10</b> ← least trusted"] --> SC
+    end
+
+    SC --> Q{score}
+    Q -->|≥ 0.72| HI[High]
+    Q -->|≥ 0.45| ME[Medium]
+    Q -->|else| LO[Low]
+
+    subgraph GATES ["hard gates — not smooth, not averaged"]
+        G1["fabricated citation · unsupported claims<br/>retrieval below floor · model declined<br/>no sources · sensitive data · injection<br/><b>policy intent</b> · unparseable output"]
+    end
+
+    HI --> CAP{"action<br/>requested?"}
+    CAP -->|yes| ASSIST
+    CAP -->|no| AUTO[auto_resolve]
+    ME --> ASSIST[agent_assist]
+    LO --> ESC[escalate]
+    GATES ==>|any one forces| ESC
+
+    style SR fill:#eaeef2,stroke:#8c959f
+    style GATES fill:#ffebe9,stroke:#cf222e
+    style AUTO fill:#1a7f37,stroke:#1a7f37,color:#fff
+    style ASSIST fill:#9a6700,stroke:#9a6700,color:#fff
+    style ESC fill:#cf222e,stroke:#cf222e,color:#fff
+```
+
+Three things in that diagram are the actual design, and each has its own section below:
+
+- **Self-report is weighted last (0.10).** LLMs are badly calibrated about their own groundedness
+  and skew high — it is the signal that is optimistic in exactly the wrong direction.
+- **Gates are not deductions.** A fabricated citation is not "slightly lower quality" to be
+  outweighed by strong retrieval. It is disqualifying, and a weighted mean would let it be voted down.
+- **`policy_intent` is the gate people leave out** — see
+  [Confidence is not authority](#confidence-is-not-authority). A perfectly grounded refund answer
+  still goes to a human, because the action behind it moves money.
+
+---
+
 ## The decision this system makes
 
 It would be easy to read this brief as "build RAG over some FAQs". That version is a demo. The thing
@@ -50,7 +171,7 @@ make ask Q="We're on Growth and getting 429s at 900 rpm. What's our real limit?"
 make eval                         # golden set — replays from cache, no key needed
 make eval-retrieval               # retrieval-only: recall@k, MRR, precision@k, hit@1
 make eval-cache                   # is a semantic answer cache safe here? (no — see below)
-make test                         # 69 offline unit tests, <1s
+make test                         # 79 offline unit tests, <1s
 make serve                        # HTTP API on :8000
 ```
 
@@ -721,12 +842,13 @@ Honest boundaries, because the right architecture at 500 tickets/day is not the 
 ## Project layout
 
 ```
+minimal.py       the brief in one file — read this first
 corpus/          9 markdown knowledge-base documents
 corpus_raw/      generated PDF (tables + figure, page-spanning table) and HTML help-centre export
 corpus_stress/   real downloaded PDFs: arXiv paper, IRS form, and a genuinely scanned PDF
 src/deflector/   the service
 evals/           golden.yaml (39 cases) + end-to-end, retrieval-only and cache-safety harnesses
-tests/           69 offline unit tests, run in under a second
+tests/           79 offline unit tests, run in under a second
 tools/           fixture builders, cost model, README results injector
 ```
 
